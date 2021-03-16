@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Exact Gas Prices</title>
+  <link rel="stylesheet" type="text/css" href="reset.css">
+  <link rel="stylesheet" type="text/css" href="price.css">
+</head>
+<body>
+  <div class="col col-left">
+    <h1>Gas Prices</h1>
+    <p>Given a particular gas price, find how many gallons you would need to fill up to get a whole number total.</p>
+
+    <form method="get" id="form" class="form" onsubmit="return generateTable()">
+    <div class="field-group">
+      <label for="price-min">Price Minimum: $</label>
+      <input type="text" class="input price-min" id="price-min" value="2.50"><span class="fraction"><sup>9</sup>&frasl;<sub>10</sub></span>
+    </div>
+    <div class="field-group">
+      <label for="price-min">Price Maximum: $</label>
+      <input type="text" class="input price-max" id="price-max" value="4.50"><span class="fraction"><sup>9</sup>&frasl;<sub>10</sub></span>
+    </div>
+    <div class="field-group">
+      <label for="gallon-max">Gallon Maximum:</label>
+      <input type="text" class="input gallon-max" id="gallon-max" value="200">
+    </div>
+    <button class="generate">Regenerate Table</button>
+    </form>
+  </div>
+  <div class="col col-right">
+    <table id="gas-table">
+      <thead>
+        <tr>
+          <th>Price/Gallon</th>
+          <th>Number of Gallons</th>
+          <th>Total Price</thead>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    var table = document.getElementById('gas-table');
+
+    /**
+     * Inserts a row into the table.
+     */
+    var insertRow = function(col1, col2, col3, className) {
+      var tbody = table.querySelector('tbody');
+      var row = tbody.insertRow();
+      row.classList.add(className);
+      var cell1 = row.insertCell(0);
+      var cell2 = row.insertCell(1);
+      var cell3 = row.insertCell(2);
+
+      cell1.innerHTML = col1;
+      cell2.innerHTML = col2;
+      cell3.innerHTML = col3;
+    }
+
+    /**
+     * Function to generate the table.
+     */
+    var generateTable = function(e) {
+      var tbody = table.querySelector('tbody');
+      var priceMin = document.getElementById('price-min');
+      var priceMax = document.getElementById('price-max');
+      var gallonMax = document.getElementById('gallon-max');
+      var min = parseFloat(parseFloat(priceMin.value).toFixed(2));
+      var max = parseFloat(parseFloat(priceMax.value).toFixed(2));
+      var gallons = parseInt(gallonMax.value, 10);
+
+      var priceFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      });
+
+      while (tbody.hasChildNodes()) {
+        tbody.removeChild(tbody.firstChild);
+      }
+
+      var i = 0;
+      for (var price = min; price <= max; price += 0.01) {
+        for (var gallon = 1; gallon <= gallons; gallon++) {
+          // Perform the calculations.
+          var totalPrice = (price + 9/1000) * gallon;
+          var roundedPrice = totalPrice.toFixed(2);
+          var flooredPrice = Math.floor(roundedPrice);
+          var ceiledPrice = Math.ceil(roundedPrice);
+
+          // If we're dealing with awhole number after rounding to 2 significant digits.
+          if (roundedPrice == flooredPrice || roundedPrice == ceiledPrice) {
+            var formattedPrice = priceFormatter.format(price) + '<span class="fraction"><sup>9</sup>&frasl;<sub>10</sub></span>';
+            var formattedGallon = gallon.toFixed(3);
+            var formattedTotal = priceFormatter.format(roundedPrice);
+            var className = ++i % 2 == 0 ? 'odd' : 'even';
+
+            insertRow(formattedPrice, formattedGallon, formattedTotal, className);
+          }
+
+        }
+      }
+      return false;
+    }
+    generateTable();
+  </script>
+</body>
+</html>
